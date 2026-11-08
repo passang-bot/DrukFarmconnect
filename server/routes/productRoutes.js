@@ -1,3 +1,4 @@
+
 const express = require("express");
 const pool = require("../config/db");
 
@@ -33,7 +34,7 @@ router.get("/", async (req, res) => {
       products: result.rows,
     });
   } catch (error) {
-    console.error("Get products error:", error.message);
+    console.error("Get products error details:", error);
 
     return res.status(500).json({
       success: false,
@@ -90,7 +91,7 @@ router.get("/:id", async (req, res) => {
       product: result.rows[0],
     });
   } catch (error) {
-    console.error("Get product error:", error.message);
+    console.error("Get product by ID error details:", error);
 
     return res.status(500).json({
       success: false,
