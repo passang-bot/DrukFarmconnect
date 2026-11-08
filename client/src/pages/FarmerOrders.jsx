@@ -1,6 +1,11 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./FarmerOrders.css";
+
+// Backend API URL
+const API_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 function FarmerOrders() {
   const navigate = useNavigate();
@@ -12,10 +17,11 @@ function FarmerOrders() {
 
   const token = localStorage.getItem("token");
 
+  // Fetch farmer orders from the backend
   const fetchOrders = async () => {
     try {
       const response = await fetch(
-        "http://localhost:5000/api/farmer-orders",
+        `${API_URL}/api/farmer-orders`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -35,6 +41,7 @@ function FarmerOrders() {
     }
   };
 
+  // Load orders when the page opens
   useEffect(() => {
     if (!token) {
       navigate("/login");
@@ -50,6 +57,7 @@ function FarmerOrders() {
     load();
   }, []);
 
+  // Update the status of an order
   const updateStatus = async (orderId, status) => {
     try {
       setUpdatingOrder(orderId);
@@ -58,7 +66,7 @@ function FarmerOrders() {
       console.log("Sending status update:", orderId, status);
 
       const response = await fetch(
-        `http://localhost:5000/api/farmer-orders/${orderId}/status`,
+        `${API_URL}/api/farmer-orders/${orderId}/status`,
         {
           method: "PUT",
           headers: {
@@ -83,7 +91,9 @@ function FarmerOrders() {
         )
       );
 
+      // Refresh orders after updating
       await fetchOrders();
+
     } catch (err) {
       setError(err.message || "Unable to update status.");
       await fetchOrders();
@@ -92,6 +102,7 @@ function FarmerOrders() {
     }
   };
 
+  // Format order date and time
   const formatDate = (date) =>
     new Date(date).toLocaleString();
 
@@ -105,6 +116,8 @@ function FarmerOrders() {
 
   return (
     <div className="farmer-orders-page">
+
+      {/* Page Header */}
       <header className="farmer-orders-header">
         <div>
           <h1>My Customer Orders</h1>
@@ -116,13 +129,16 @@ function FarmerOrders() {
         </button>
       </header>
 
+      {/* Error Message */}
       {error && (
         <div className="farmer-orders-error">
           {error}
         </div>
       )}
 
+      {/* Order Summary */}
       <section className="farmer-orders-summary">
+
         <div className="farmer-orders-summary-card">
           <h3>Total Orders</h3>
           <strong>{orders.length}</strong>
@@ -130,30 +146,49 @@ function FarmerOrders() {
 
         <div className="farmer-orders-summary-card">
           <h3>Preparing</h3>
-          <strong>{orders.filter(o => o.status === "Preparing").length}</strong>
+          <strong>
+            {orders.filter(o => o.status === "Preparing").length}
+          </strong>
         </div>
 
         <div className="farmer-orders-summary-card">
           <h3>On the Way</h3>
-          <strong>{orders.filter(o => o.status === "On the Way").length}</strong>
+          <strong>
+            {orders.filter(o => o.status === "On the Way").length}
+          </strong>
         </div>
 
         <div className="farmer-orders-summary-card">
           <h3>Delivered</h3>
-          <strong>{orders.filter(o => o.status === "Delivered").length}</strong>
+          <strong>
+            {orders.filter(o => o.status === "Delivered").length}
+          </strong>
         </div>
+
       </section>
 
+      {/* Orders List */}
       {orders.length === 0 ? (
+
         <div className="farmer-orders-empty">
           <h2>No orders yet</h2>
           <p>New customer orders will appear here.</p>
         </div>
+
       ) : (
+
         <section className="farmer-orders-list">
+
           {orders.map((order) => (
-            <article className="farmer-order-card" key={order.id}>
+
+            <article
+              className="farmer-order-card"
+              key={order.id}
+            >
+
+              {/* Order Header */}
               <div className="farmer-order-top">
+
                 <div>
                   <h2>{order.order_number}</h2>
                   <p>Placed: {formatDate(order.created_at)}</p>
@@ -166,36 +201,67 @@ function FarmerOrders() {
                 >
                   {order.status}
                 </span>
+
               </div>
 
+              {/* Customer Information */}
               <div className="farmer-order-customer">
+
                 <h3>Delivery Information</h3>
-                <p><strong>Customer:</strong> {order.recipient_name}</p>
-                <p><strong>Phone:</strong> {order.delivery_phone}</p>
-                <p><strong>Address:</strong> {order.delivery_address}</p>
-                <p><strong>City:</strong> {order.delivery_city}</p>
+
+                <p>
+                  <strong>Customer:</strong> {order.recipient_name}
+                </p>
+
+                <p>
+                  <strong>Phone:</strong> {order.delivery_phone}
+                </p>
+
+                <p>
+                  <strong>Address:</strong> {order.delivery_address}
+                </p>
+
+                <p>
+                  <strong>City:</strong> {order.delivery_city}
+                </p>
+
               </div>
 
+              {/* Ordered Products */}
               <div className="farmer-order-items">
+
                 <h3>Products Ordered</h3>
 
                 {(order.items || []).map((item, index) => (
-                  <div className="farmer-order-item" key={index}>
+
+                  <div
+                    className="farmer-order-item"
+                    key={index}
+                  >
+
                     <span>{item.product_name}</span>
+
                     <span>
                       {item.quantity} {item.unit} × Nu.{" "}
                       {Number(item.unit_price).toFixed(2)}
                     </span>
+
                     <strong>
                       Nu. {Number(item.line_total).toFixed(2)}
                     </strong>
+
                   </div>
+
                 ))}
+
               </div>
 
+              {/* Order Total and Status */}
               <div className="farmer-order-bottom">
+
                 <div>
                   <span>Your Order Total</span>
+
                   <strong>
                     Nu. {Number(order.farmer_subtotal || 0).toFixed(2)}
                   </strong>
@@ -203,7 +269,9 @@ function FarmerOrders() {
 
                 {order.status !== "Delivered" &&
                   order.status !== "Cancelled" && (
+
                     <div className="farmer-order-actions">
+
                       <label htmlFor={`status-${order.id}`}>
                         Update order status
                       </label>
@@ -216,24 +284,43 @@ function FarmerOrders() {
                           updateStatus(order.id, e.target.value)
                         }
                       >
+
                         <option value="Confirmed" disabled>
                           Confirmed
                         </option>
-                        <option value="Preparing">Preparing</option>
-                        <option value="On the Way">On the Way</option>
-                        <option value="Delivered">Delivered</option>
+
+                        <option value="Preparing">
+                          Preparing
+                        </option>
+
+                        <option value="On the Way">
+                          On the Way
+                        </option>
+
+                        <option value="Delivered">
+                          Delivered
+                        </option>
+
                       </select>
 
                       {updatingOrder === order.id && (
                         <p>Updating order...</p>
                       )}
+
                     </div>
+
                   )}
+
               </div>
+
             </article>
+
           ))}
+
         </section>
+
       )}
+
     </div>
   );
 }

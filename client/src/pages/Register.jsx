@@ -1,8 +1,11 @@
+
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import "./Register.css";
 
-const API_URL = "http://localhost:5000";
+// Backend API URL
+const API_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 function Register() {
   const navigate = useNavigate();
@@ -18,6 +21,7 @@ function Register() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Handle form input changes
   function handleChange(event) {
     const { name, value } = event.target;
 
@@ -27,6 +31,7 @@ function Register() {
     }));
   }
 
+  // Handle account registration
   async function handleSubmit(event) {
     event.preventDefault();
     setError("");
@@ -47,16 +52,25 @@ function Register() {
         throw new Error(data.message || "Registration failed.");
       }
 
+      if (!data.token || !data.user) {
+        throw new Error(
+          "The server returned an incomplete registration response."
+        );
+      }
+
+      // Save authentication information
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
 
+      // Redirect according to account type
       if (data.user.role === "farmer") {
         navigate("/farmer/dashboard");
       } else {
         navigate("/");
       }
+
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Unable to connect to the server.");
     } finally {
       setLoading(false);
     }
@@ -65,15 +79,21 @@ function Register() {
   return (
     <div className="register-page">
       <div className="register-card">
+
         <h1>Join DrukFarm Connect</h1>
 
         <p className="register-subtitle">
           Create your account and connect with Bhutanese agriculture.
         </p>
 
-        {error && <p className="register-error">{error}</p>}
+        {error && (
+          <p className="register-error" role="alert">
+            {error}
+          </p>
+        )}
 
         <form onSubmit={handleSubmit}>
+
           <label>
             Full Name
             <input
@@ -148,11 +168,14 @@ function Register() {
           <button type="submit" disabled={loading}>
             {loading ? "Creating Account..." : "Create Account"}
           </button>
+
         </form>
 
         <p className="register-login-link">
-          Already have an account? <Link to="/login">Login here</Link>
+          Already have an account?{" "}
+          <Link to="/login">Login here</Link>
         </p>
+
       </div>
     </div>
   );

@@ -1,8 +1,10 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Checkout.css";
 
-const API_URL = "http://localhost:5000";
+const API_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 function Checkout() {
   const navigate = useNavigate();
@@ -45,17 +47,14 @@ function Checkout() {
     setLoading(true);
 
     try {
-      const response = await fetch(
-        `${API_URL}/api/orders/checkout`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(formData),
-        }
-      );
+      const response = await fetch(`${API_URL}/api/orders/checkout`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(formData),
+      });
 
       const data = await response.json();
 
@@ -73,6 +72,7 @@ function Checkout() {
         );
       }
 
+      // Redirect to order confirmation page
       navigate("/order-success", {
         replace: true,
         state: {
@@ -82,9 +82,10 @@ function Checkout() {
           paymentStatus: data.paymentStatus,
         },
       });
+
     } catch (err) {
       console.error("Checkout submission error:", err);
-      setError(err.message || "Something went wrong.");
+      setError(err.message || "Unable to place your order.");
     } finally {
       setLoading(false);
     }
@@ -93,12 +94,14 @@ function Checkout() {
   return (
     <div className="checkout-page">
       <div className="checkout-container">
+
         <div className="checkout-heading">
           <h1>Checkout</h1>
           <p>Enter your delivery details to place your order.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="checkout-form">
+
           <section className="checkout-section">
             <h2>Delivery Information</h2>
 
@@ -215,7 +218,7 @@ function Checkout() {
           </section>
 
           {error && (
-            <div className="checkout-error">
+            <div className="checkout-error" role="alert">
               {error}
             </div>
           )}
@@ -235,6 +238,7 @@ function Checkout() {
           >
             Back to Cart
           </button>
+
         </form>
       </div>
     </div>

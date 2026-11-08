@@ -1,8 +1,10 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./FarmerDashboard.css";
 
-const API_URL = "http://localhost:5000";
+const API_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 const emptyForm = {
   name: "",
@@ -53,7 +55,7 @@ function FarmerDashboard() {
 
       setProducts(data.products || []);
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Unable to load products.");
     } finally {
       setLoading(false);
     }
@@ -78,7 +80,7 @@ function FarmerDashboard() {
 
       setSummary(data.summary || emptySummary);
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Unable to load sales summary.");
     }
   }
 
@@ -96,18 +98,21 @@ function FarmerDashboard() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          data.message || "Could not load monthly sales."
-        );
+        throw new Error(data.message || "Could not load monthly sales.");
       }
 
       setMonthlySales(data.monthlySales || []);
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Unable to load monthly sales.");
     }
   }
 
   useEffect(() => {
+    if (!token) {
+      navigate("/login", { replace: true });
+      return;
+    }
+
     loadProducts();
     loadSalesSummary();
     loadMonthlySales();
@@ -188,7 +193,7 @@ function FarmerDashboard() {
 
       await loadProducts();
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Unable to save product.");
     }
   }
 
@@ -229,7 +234,7 @@ function FarmerDashboard() {
 
       await loadProducts();
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Unable to delete product.");
     }
   }
 
