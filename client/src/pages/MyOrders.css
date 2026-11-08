@@ -1,0 +1,155 @@
+.my-orders-page {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 35px 20px 60px;
+  color: #263326;
+}
+
+.my-orders-page h1 {
+  margin: 25px 0 8px;
+  font-size: 32px;
+  color: #245c32;
+}
+
+.my-orders-intro {
+  color: #687568;
+  margin-bottom: 30px;
+}
+
+.my-orders-back {
+  border: none;
+  background: transparent;
+  color: #28713a;
+  font-size: 15px;
+  cursor: pointer;
+  padding: 8px 0;
+}
+
+.my-orders-list {
+  display: grid;
+  gap: 22px;
+}
+
+.my-order-card {
+  background: #ffffff;
+  border: 1px solid #e1e9df;
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.04);
+}
+
+.my-order-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 15px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #e8eee6;
+}
+
+.my-order-heading h2 {
+  margin: 0 0 7px;
+  font-size: 17px;
+  overflow-wrap: anywhere;
+}
+
+.my-order-date {
+  margin: 0;
+  color: #788278;
+  font-size: 13px;
+}
+
+.my-order-status {
+  background: #e8f4e9;
+  color: #26723a;
+  padding: 7px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.my-order-items {
+  padding: 18px 0;
+  display: grid;
+  gap: 13px;
+}
+
+.my-order-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  font-size: 14px;
+}
+
+.my-order-total {
+  border-top: 1px solid #e8eee6;
+  padding-top: 17px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 16px;
+}
+
+.my-order-total strong {
+  color: #245c32;
+  font-size: 19px;
+}
+
+.my-orders-empty {
+  text-align: center;
+  background: #f5f9f3;
+  border-radius: 14px;
+  padding: 45px 20px;
+}
+
+.my-orders-empty h2 {
+  color: #245c32;
+}
+
+.my-orders-empty button {
+  background: #28713a;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 22px;
+  cursor: pointer;
+  margin-top: 12px;
+}
+
+.my-orders-message {
+  padding: 14px;
+  border-radius: 8px;
+}
+
+.my-orders-error {
+  background: #fff0ef;
+  color: #a52c25;
+}
+
+@media (max-width: 600px) {
+  .my-orders-page {
+    padding: 22px 14px 40px;
+  }
+
+  .my-orders-page h1 {
+    font-size: 27px;
+  }
+
+  .my-order-card {
+    padding: 17px;
+  }
+
+  .my-order-heading {
+    flex-direction: column;
+  }
+
+  .my-order-item {
+    font-size: 13px;
+  }
+
+  .my-order-total {
+    font-size: 14px;
+  }
+}

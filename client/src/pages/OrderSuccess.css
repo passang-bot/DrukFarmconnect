@@ -1,0 +1,144 @@
+.order-success-page {
+  min-height: 100vh;
+  background: #f5f7f2;
+  padding: 40px 20px;
+  font-family: Arial, sans-serif;
+  box-sizing: border-box;
+}
+
+.order-success-card {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 35px;
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.07);
+  text-align: center;
+}
+
+.success-icon {
+  width: 75px;
+  height: 75px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  background: #e3f4e7;
+  color: #28743e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 45px;
+  font-weight: bold;
+}
+
+.order-success-card h1 {
+  color: #245c35;
+  font-size: 30px;
+  margin-bottom: 12px;
+}
+
+.success-message {
+  color: #666666;
+  font-size: 15px;
+  line-height: 1.6;
+  margin-bottom: 30px;
+}
+
+.order-success-details {
+  text-align: left;
+  background: #f8faf7;
+  border: 1px solid #e4eae1;
+  border-radius: 10px;
+  padding: 22px;
+}
+
+.order-success-details h2 {
+  color: #245c35;
+  font-size: 21px;
+  margin: 0 0 20px;
+}
+
+.success-order-item {
+  padding: 15px 0;
+  border-bottom: 1px solid #e0e6dd;
+}
+
+.success-order-item p,
+.success-payment p {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  margin: 10px 0;
+  font-size: 14px;
+  color: #444444;
+}
+
+.success-order-item p span,
+.success-payment p span {
+  text-align: right;
+}
+
+.success-payment {
+  padding-top: 15px;
+}
+
+.success-grand-total {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  padding-top: 18px;
+  margin-top: 15px;
+  border-top: 2px solid #dce6d9;
+  color: #245c35;
+  font-size: 19px;
+}
+
+.delivery-thank-you {
+  margin: 25px 0;
+  color: #666666;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.continue-shopping-button,
+.order-success-card > button {
+  background: #28743e;
+  color: #ffffff;
+  padding: 14px 25px;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.continue-shopping-button:hover,
+.order-success-card > button:hover {
+  background: #1e5d31;
+}
+
+@media (max-width: 600px) {
+  .order-success-page {
+    padding: 20px 12px;
+  }
+
+  .order-success-card {
+    padding: 22px 16px;
+  }
+
+  .order-success-card h1 {
+    font-size: 25px;
+  }
+
+  .order-success-details {
+    padding: 15px;
+  }
+
+  .success-order-item p,
+  .success-payment p {
+    font-size: 13px;
+  }
+
+  .success-grand-total {
+    font-size: 16px;
+  }
+}
