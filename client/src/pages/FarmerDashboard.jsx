@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./FarmerDashboard.css";
 
 const API_URL = "http://localhost:5000";
@@ -14,8 +15,19 @@ const emptyForm = {
   image_url: "",
 };
 
+const emptySummary = {
+  totalOrders: 0,
+  totalEarnings: 0,
+  pendingOrders: 0,
+  deliveredOrders: 0,
+};
+
 function FarmerDashboard() {
+  const navigate = useNavigate();
+
   const [products, setProducts] = useState([]);
+  const [summary, setSummary] = useState(emptySummary);
+  const [monthlySales, setMonthlySales] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingProductId, setEditingProductId] = useState(null);
@@ -47,8 +59,58 @@ function FarmerDashboard() {
     }
   }
 
+  async function loadSalesSummary() {
+    try {
+      const response = await fetch(
+        `${API_URL}/api/farmer/sales-summary`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Could not load sales summary.");
+      }
+
+      setSummary(data.summary || emptySummary);
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
+  async function loadMonthlySales() {
+    try {
+      const response = await fetch(
+        `${API_URL}/api/farmer/monthly-sales`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || "Could not load monthly sales."
+        );
+      }
+
+      setMonthlySales(data.monthlySales || []);
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
   useEffect(() => {
     loadProducts();
+    loadSalesSummary();
+    loadMonthlySales();
   }, []);
 
   function handleChange(event) {
@@ -178,6 +240,11 @@ function FarmerDashboard() {
     setError("");
   }
 
+  const maximumEarnings = Math.max(
+    ...monthlySales.map((month) => Number(month.earnings)),
+    1
+  );
+
   if (loading) {
     return (
       <div className="farmer-dashboard">
@@ -194,20 +261,31 @@ function FarmerDashboard() {
           <p>Manage your farm products on DrukFarm Connect.</p>
         </div>
 
-        <button
-          className="add-product-button"
-          onClick={() => {
-            if (showForm) {
-              closeForm();
-            } else {
-              setShowForm(true);
-              setError("");
-              setSuccess("");
-            }
-          }}
-        >
-          {showForm ? "Close Form" : "+ Add Product"}
-        </button>
+        <div className="dashboard-header-actions">
+          <button
+            type="button"
+            className="manage-orders-button"
+            onClick={() => navigate("/farmer/orders")}
+          >
+            Manage Orders
+          </button>
+
+          <button
+            type="button"
+            className="add-product-button"
+            onClick={() => {
+              if (showForm) {
+                closeForm();
+              } else {
+                setShowForm(true);
+                setError("");
+                setSuccess("");
+              }
+            }}
+          >
+            {showForm ? "Close Form" : "+ Add Product"}
+          </button>
+        </div>
       </div>
 
       {error && <p className="dashboard-error">{error}</p>}
@@ -333,7 +411,7 @@ function FarmerDashboard() {
         </form>
       )}
 
-      <div className="dashboard-stats">
+      <section className="dashboard-stats">
         <div className="stat-card">
           <h3>Total Products</h3>
           <p>{products.length}</p>
@@ -345,7 +423,147 @@ function FarmerDashboard() {
             {products.filter((product) => product.is_available).length}
           </p>
         </div>
-      </div>
+
+        <div className="stat-card">
+          <h3>Total Orders</h3>
+          <p>{summary.totalOrders}</p>
+        </div>
+
+        <div className="stat-card">
+          <h3>Total Earnings</h3>
+          <p>Nu. {Number(summary.totalEarnings).toFixed(2)}</p>
+        </div>
+
+        <div className="stat-card">
+          <h3>Pending Orders</h3>
+          <p>{summary.pendingOrders}</p>
+        </div>
+
+        <div className="stat-card">
+          <h3>Delivered Orders</h3>
+          <p>{summary.deliveredOrders}</p>
+        </div>
+      </section>
+
+      {/* Monthly sales report */}
+      <section
+        style={{
+          background: "#ffffff",
+          padding: "24px",
+          marginTop: "30px",
+          marginBottom: "30px",
+          borderRadius: "12px",
+          boxShadow: "0 2px 10px rgba(0,0,0,0.06)",
+        }}
+      >
+        <h2 style={{ marginTop: 0 }}>Monthly Sales Report</h2>
+
+        <p style={{ color: "#666" }}>
+          Your earnings from completed deliveries over the last 12 months.
+        </p>
+
+        {monthlySales.length === 0 ? (
+          <p>Monthly sales information is not available yet.</p>
+        ) : (
+          <>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "flex-end",
+                gap: "12px",
+                height: "230px",
+                overflowX: "auto",
+                padding: "15px 5px 5px",
+                borderBottom: "1px solid #dddddd",
+              }}
+            >
+              {monthlySales.map((month) => {
+                const earnings = Number(month.earnings);
+                const barHeight =
+                  earnings > 0
+                    ? Math.max((earnings / maximumEarnings) * 170, 6)
+                    : 3;
+
+                return (
+                  <div
+                    key={month.month}
+                    title={`${month.month}: Nu. ${earnings.toFixed(2)}; ${month.deliveredOrders} delivered orders`}
+                    style={{
+                      flex: "1 0 65px",
+                      minWidth: "65px",
+                      height: "100%",
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "flex-end",
+                      alignItems: "center",
+                      gap: "7px",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: "11px",
+                        fontWeight: "600",
+                        textAlign: "center",
+                      }}
+                    >
+                      {earnings.toFixed(0)}
+                    </span>
+
+                    <div
+                      style={{
+                        width: "65%",
+                        height: `${barHeight}px`,
+                        minHeight: "3px",
+                        background: "#27864b",
+                        borderRadius: "6px 6px 0 0",
+                      }}
+                    />
+
+                    <span
+                      style={{
+                        fontSize: "11px",
+                        color: "#555",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {month.month}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: "20px",
+                marginTop: "20px",
+              }}
+            >
+              {monthlySales.map((month) => (
+                <div
+                  key={`${month.month}-details`}
+                  style={{
+                    background: "#f5f8f5",
+                    padding: "12px",
+                    borderRadius: "8px",
+                    flex: "1 1 150px",
+                  }}
+                >
+                  <strong>{month.month}</strong>
+                  <p style={{ margin: "8px 0 3px" }}>
+                    Nu. {Number(month.earnings).toFixed(2)}
+                  </p>
+                  <small>
+                    {month.deliveredOrders} delivered orders
+                  </small>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </section>
 
       <section className="products-section">
         <h2>My Products</h2>

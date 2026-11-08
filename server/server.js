@@ -15,11 +15,8 @@ const farmerOrderRoutes = require("./routes/farmerOrderRoutes");
 
 const app = express();
 
-app.use(
-  cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
-  })
-);
+// Allow frontend connections during local development
+app.use(cors());
 
 app.use(express.json());
 
@@ -40,6 +37,7 @@ app.get("/api/health", (req, res) => {
 app.get("/api/db-check", async (req, res) => {
   try {
     const result = await pool.query("SELECT NOW()");
+
     res.json({
       success: true,
       message: "PostgreSQL connected successfully",
@@ -47,6 +45,7 @@ app.get("/api/db-check", async (req, res) => {
     });
   } catch (error) {
     console.error("Database check error:", error);
+
     res.status(500).json({
       success: false,
       message: "Database connection failed",

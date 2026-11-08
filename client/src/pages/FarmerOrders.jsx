@@ -14,14 +14,14 @@ function FarmerOrders() {
 
   const fetchOrders = async () => {
     try {
-      setLoading(true);
-      setError("");
-
-      const response = await fetch("http://localhost:5000/api/farmer-orders", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        "http://localhost:5000/api/farmer-orders",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       const data = await response.json();
 
@@ -31,9 +31,7 @@ function FarmerOrders() {
 
       setOrders(data.orders || []);
     } catch (err) {
-      setError(err.message || "Something went wrong.");
-    } finally {
-      setLoading(false);
+      setError(err.message || "Unable to load orders.");
     }
   };
 
@@ -43,13 +41,21 @@ function FarmerOrders() {
       return;
     }
 
-    fetchOrders();
+    const load = async () => {
+      setLoading(true);
+      await fetchOrders();
+      setLoading(false);
+    };
+
+    load();
   }, []);
 
   const updateStatus = async (orderId, status) => {
     try {
       setUpdatingOrder(orderId);
       setError("");
+
+      console.log("Sending status update:", orderId, status);
 
       const response = await fetch(
         `http://localhost:5000/api/farmer-orders/${orderId}/status`,
@@ -65,24 +71,36 @@ function FarmerOrders() {
 
       const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.message || "Could not update order status.");
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || "Status update failed.");
       }
+
+      setOrders((previous) =>
+        previous.map((order) =>
+          Number(order.id) === Number(orderId)
+            ? { ...order, status: data.order.status }
+            : order
+        )
+      );
 
       await fetchOrders();
     } catch (err) {
-      setError(err.message || "Status update failed.");
+      setError(err.message || "Unable to update status.");
+      await fetchOrders();
     } finally {
       setUpdatingOrder(null);
     }
   };
 
-  const formatDate = (date) => {
-    return new Date(date).toLocaleString();
-  };
+  const formatDate = (date) =>
+    new Date(date).toLocaleString();
 
   if (loading) {
-    return <div className="farmer-orders-loading">Loading your orders...</div>;
+    return (
+      <div className="farmer-orders-loading">
+        Loading your orders...
+      </div>
+    );
   }
 
   return (
@@ -98,7 +116,11 @@ function FarmerOrders() {
         </button>
       </header>
 
-      {error && <div className="farmer-orders-error">{error}</div>}
+      {error && (
+        <div className="farmer-orders-error">
+          {error}
+        </div>
+      )}
 
       <section className="farmer-orders-summary">
         <div className="farmer-orders-summary-card">
@@ -108,23 +130,17 @@ function FarmerOrders() {
 
         <div className="farmer-orders-summary-card">
           <h3>Preparing</h3>
-          <strong>
-            {orders.filter((order) => order.status === "Preparing").length}
-          </strong>
+          <strong>{orders.filter(o => o.status === "Preparing").length}</strong>
         </div>
 
         <div className="farmer-orders-summary-card">
           <h3>On the Way</h3>
-          <strong>
-            {orders.filter((order) => order.status === "On the Way").length}
-          </strong>
+          <strong>{orders.filter(o => o.status === "On the Way").length}</strong>
         </div>
 
         <div className="farmer-orders-summary-card">
           <h3>Delivered</h3>
-          <strong>
-            {orders.filter((order) => order.status === "Delivered").length}
-          </strong>
+          <strong>{orders.filter(o => o.status === "Delivered").length}</strong>
         </div>
       </section>
 
@@ -143,9 +159,11 @@ function FarmerOrders() {
                   <p>Placed: {formatDate(order.created_at)}</p>
                 </div>
 
-                <span className={`farmer-order-status ${order.status
-                  .toLowerCase()
-                  .replaceAll(" ", "-")}`}>
+                <span
+                  className={`farmer-order-status ${order.status
+                    .toLowerCase()
+                    .replaceAll(" ", "-")}`}
+                >
                   {order.status}
                 </span>
               </div>
@@ -165,7 +183,8 @@ function FarmerOrders() {
                   <div className="farmer-order-item" key={index}>
                     <span>{item.product_name}</span>
                     <span>
-                      {item.quantity} {item.unit} × Nu. {Number(item.unit_price).toFixed(2)}
+                      {item.quantity} {item.unit} × Nu.{" "}
+                      {Number(item.unit_price).toFixed(2)}
                     </span>
                     <strong>
                       Nu. {Number(item.line_total).toFixed(2)}
@@ -177,7 +196,9 @@ function FarmerOrders() {
               <div className="farmer-order-bottom">
                 <div>
                   <span>Your Order Total</span>
-                  <strong>Nu. {Number(order.farmer_subtotal || 0).toFixed(2)}</strong>
+                  <strong>
+                    Nu. {Number(order.farmer_subtotal || 0).toFixed(2)}
+                  </strong>
                 </div>
 
                 {order.status !== "Delivered" &&
@@ -191,13 +212,21 @@ function FarmerOrders() {
                         id={`status-${order.id}`}
                         value={order.status}
                         disabled={updatingOrder === order.id}
-                        onChange={(e) => updateStatus(order.id, e.target.value)}
+                        onChange={(e) =>
+                          updateStatus(order.id, e.target.value)
+                        }
                       >
-                        <option value="Confirmed" disabled>Confirmed</option>
+                        <option value="Confirmed" disabled>
+                          Confirmed
+                        </option>
                         <option value="Preparing">Preparing</option>
                         <option value="On the Way">On the Way</option>
                         <option value="Delivered">Delivered</option>
                       </select>
+
+                      {updatingOrder === order.id && (
+                        <p>Updating order...</p>
+                      )}
                     </div>
                   )}
               </div>

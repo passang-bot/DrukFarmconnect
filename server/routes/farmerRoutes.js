@@ -7,7 +7,7 @@ const {
 
 const router = express.Router();
 
-// All routes in this file require a logged-in farmer.
+// All routes require a logged-in farmer.
 router.use(authenticateToken, requireRole("farmer"));
 
 // GET: Farmer dashboard
@@ -28,6 +28,98 @@ router.get("/dashboard", async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Could not load farmer dashboard.",
+    });
+  }
+});
+
+// GET: Farmer sales summary
+router.get("/sales-summary", async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT
+         COUNT(*) AS total_orders,
+         COALESCE(
+           SUM(subtotal) FILTER (WHERE status = 'Delivered'),
+           0
+         ) AS total_earnings,
+         COUNT(*) FILTER (
+           WHERE status NOT IN ('Delivered', 'Cancelled')
+         ) AS pending_orders,
+         COUNT(*) FILTER (
+           WHERE status = 'Delivered'
+         ) AS delivered_orders
+       FROM orders
+       WHERE farmer_id = $1`,
+      [req.user.id]
+    );
+
+    const summary = result.rows[0];
+
+    return res.status(200).json({
+      success: true,
+      summary: {
+        totalOrders: Number(summary.total_orders),
+        totalEarnings: Number(summary.total_earnings),
+        pendingOrders: Number(summary.pending_orders),
+        deliveredOrders: Number(summary.delivered_orders),
+      },
+    });
+  } catch (error) {
+    console.error("Farmer sales summary error:", error.message);
+
+    return res.status(500).json({
+      success: false,
+      message: "Could not load your sales summary.",
+    });
+  }
+});
+
+// GET: Monthly sales for the last 12 months
+router.get("/monthly-sales", async (req, res) => {
+  try {
+    const result = await pool.query(
+      `WITH months AS (
+         SELECT generate_series(
+           date_trunc('month', NOW() AT TIME ZONE 'Asia/Thimphu')
+             - INTERVAL '11 months',
+           date_trunc('month', NOW() AT TIME ZONE 'Asia/Thimphu'),
+           INTERVAL '1 month'
+         ) AS month_start
+       )
+       SELECT
+         TO_CHAR(m.month_start, 'Mon YYYY') AS month,
+         COALESCE(SUM(o.subtotal), 0) AS earnings,
+         COUNT(o.id) AS delivered_orders
+       FROM months m
+       LEFT JOIN orders o
+         ON o.farmer_id = $1
+         AND o.status = 'Delivered'
+         AND o.delivered_at IS NOT NULL
+         AND date_trunc(
+           'month',
+           o.delivered_at AT TIME ZONE 'Asia/Thimphu'
+         ) = m.month_start
+       GROUP BY m.month_start
+       ORDER BY m.month_start ASC`,
+      [req.user.id]
+    );
+
+    const monthlySales = result.rows.map((row) => ({
+      month: row.month,
+      earnings: Number(row.earnings),
+      deliveredOrders: Number(row.delivered_orders),
+    }));
+
+    return res.status(200).json({
+      success: true,
+      monthlySales,
+    });
+  } catch (error) {
+    console.error("Farmer monthly sales error:", error.message);
+
+    return res.status(500).json({
+      success: false,
+      message: "Could not load your monthly sales report.",
     });
   }
 });
