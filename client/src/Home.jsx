@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import "./App.css";
 
@@ -23,7 +24,7 @@ function App() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All Products");
 
-  // Cart state now comes from PostgreSQL
+  // Cart state comes from PostgreSQL
   const [cart, setCart] = useState([]);
   const [cartMessage, setCartMessage] = useState("");
   const [addingProductId, setAddingProductId] = useState(null);
@@ -229,7 +230,7 @@ function App() {
     }
   }
 
-  // Display cart summary
+  // Navigate directly to Cart page
   function showCart() {
     const user = getCurrentUser();
 
@@ -239,25 +240,8 @@ function App() {
       return;
     }
 
-    if (cart.length === 0) {
-      alert("Your cart is currently empty.");
-      return;
-    }
-
-    const cartSummary = cart
-      .map(
-        (item) =>
-          `${item.name} x ${item.cart_quantity} = Nu. ${Number(
-            item.subtotal
-          ).toFixed(2)}`
-      )
-      .join("\n");
-
-    alert(
-      `YOUR DRUKFARM CART\n\n${cartSummary}\n\nTotal: Nu. ${cartTotal.toFixed(
-        2
-      )}`
-    );
+    // Open the actual Cart page
+    window.location.href = "/cart";
   }
 
   return (
